@@ -7,7 +7,11 @@ async function sendMsg(txt) {
   await bot.sendMessage(id, txt);
 }
 async function sendPhoto(path) {
-  await bot.sendPhoto(id, path);
+  try {
+    await bot.sendPhoto(id, path);
+  } catch (error) {
+    console.error(`Got an error trying to upload a photo: ${error.message}`);
+  }
 }
 
 module.exports = { sendMsg: sendMsg, sendPhoto: sendPhoto };
