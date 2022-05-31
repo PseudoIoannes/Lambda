@@ -2,7 +2,8 @@ const axios = require("axios").default;
 const TelegramBot = require("node-telegram-bot-api");
 
 //module.exports = "YOURTOKEN"
-const token = require("./.env.js");
+// const token = require("./.env.js");
+const token = process.env.token;
 const bot = new TelegramBot(token, { polling: true });
 
 bot.on("message", (msg) => {
