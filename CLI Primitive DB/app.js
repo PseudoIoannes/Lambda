@@ -73,7 +73,7 @@ async function findDB(filePath, query) {
     }
     if (exists === false) {
       console.log("User not found");
-      exists = true;
+      // exists = true; wrong!
     }
   } catch (error) {
     console.error(`Got an error trying to read the file: ${error.message}`); // No db error

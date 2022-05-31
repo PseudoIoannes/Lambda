@@ -8,7 +8,7 @@ async function main() {
     .action(sendMsg)
     .addHelpText(
       "after",
-      `Usage example:
+      `example:
       node app.js message ‘Your message’`
     );
 
@@ -18,7 +18,7 @@ async function main() {
     .action(sendPhoto)
     .addHelpText(
       "after",
-      `Usage example:
+      `example:
       node app.js photo /path/to/photo/picture.png`
     );
 
