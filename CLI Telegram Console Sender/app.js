@@ -1,7 +1,18 @@
 const { program } = require("commander");
 const { sendMsg, sendPhoto } = require("./bot.js");
+const { write_token } = require("./jwt.js");
 
 async function main() {
+  program
+    .command("login <JWT_token>")
+    .description("Logins your console to your tg by creating a jwt token file")
+    .action(write_token)
+    .addHelpText(
+      "after",
+      `example:
+      node app.js login Your_JWT_token`
+    );
+
   program
     .command("message <text>")
     .description("Send a message to telegram")
