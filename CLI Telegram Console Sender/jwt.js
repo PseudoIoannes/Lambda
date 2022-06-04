@@ -1,49 +1,20 @@
 const jwt = require("jwt-simple");
-const fs = require("fs").promises;
-let { secret } = require("./.env.js"); //secret env
+let secret = process.env.SECRET; //secret env
 
-async function read_token() {
-  try {
-    let tkn = await fs.readFile("jwt_token", {
-      flag: "r",
-      encoding: "utf8",
-    });
-    return tkn;
-  } catch (err) {
-    if (err.errno === -4058) {
-      console.log(
-        "Please login before using app, seems like you dont have token file created yet :/"
-      );
-    } else {
-      console.log(err.message);
-    }
-  }
-}
-
-async function write_token(token) {
-  await fs.writeFile("jwt_token", `${token}`, {
-    flag: "w",
-  });
-}
-
-function jwt_register(id) {
+function jwtReg(id) {
   return jwt.encode({ id }, secret);
 }
 
-function jwt_auth(token) {
+function jwtAuth(token) {
   try {
     let decode = jwt.decode(token, secret);
-    // console.log(decode.id);
     return decode.id;
   } catch (err) {
-    console.log(err.message);
-    return false;
+    return err.message;
   }
 }
 
 module.exports = {
-  jwt_register: jwt_register,
-  jwt_auth: jwt_auth,
-  read_token: read_token,
-  write_token: write_token,
+  jwtReg: jwtReg,
+  jwtAuth: jwtAuth,
 };
