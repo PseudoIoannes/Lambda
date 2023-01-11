@@ -1,9 +1,5 @@
 const inquirer = require("inquirer");
 const fs = require("fs").promises;
-const path = require("path");
-
-// const dbFile = path.join(__dirname, "dbFile.txt");
-let id = 0;
 
 const newEntry = () => {
   inquirer
@@ -30,29 +26,27 @@ const newEntry = () => {
           return answers.name.length !== 0;
         },
         validate(num) {
-          return isNaN(num) ? "Неверный формат, ведите число" : true;
+          return isNaN(num) || num === ""
+            ? "Неверный формат, введите число"
+            : true;
         },
       },
     ])
     .then((answers) => {
       if (answers.name.length === 0) {
-        return searchDB();
+        searchDB();
+      } else {
+        addItem(answers);
+        newEntry();
       }
-
-      addItem(answers);
-      newEntry();
     });
 };
 
 async function addItem(item) {
   try {
-    await fs.writeFile(
-      "dbFile.txt",
-      `"${(id += 1)}": ` + JSON.stringify(item, null, "  ") + ",",
-      {
-        flag: "a",
-      }
-    );
+    await fs.writeFile("dbFile.txt", JSON.stringify(item, null, "  ") + ",", {
+      flag: "a",
+    });
   } catch (error) {
     console.error(`Got an error trying to write to a file: ${error.message}`);
   }
@@ -61,19 +55,20 @@ async function addItem(item) {
 async function findDB(filePath, query) {
   try {
     let data = await fs.readFile(filePath);
-    data = "{\n" + data.toString().replace(/,$/, "") + "\n}";
+    data = "[ " + data.toString().replace(/,$/, "") + " ]";
     data = JSON.parse(data);
-    let exists = false;
-    for (const el of Object.keys(data)) {
-      if (query === data[el].name) {
-        console.log(JSON.stringify(data[el]));
-        exists = true;
+    let answers = [];
+    for (const el of data) {
+      if (el.name.toLowerCase().includes(query.toLowerCase())) {
+        answers.push(el);
       }
-      // console.log(a[obj]);
     }
-    if (exists === false) {
+    if (answers.length === 0) {
       console.log("User not found");
-      // exists = true; wrong!
+    } else {
+      for (let e of answers) {
+        console.log(e);
+      }
     }
   } catch (error) {
     console.error(`Got an error trying to read the file: ${error.message}`); // No db error

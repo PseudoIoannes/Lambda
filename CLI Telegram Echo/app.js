@@ -1,8 +1,5 @@
 const axios = require("axios").default;
 const TelegramBot = require("node-telegram-bot-api");
-
-//module.exports = "YOURTOKEN"
-// const token = require("./.env.js");
 const token = process.env.token;
 const bot = new TelegramBot(token, { polling: true });
 
@@ -62,8 +59,4 @@ bot.on("message", (msg) => {
     bot.sendVideo(chatId, msg.video.file_id);
     console.log(msg.from.first_name, msg.from.last_name, "Отправил видео");
   }
-  // if (msg.animation) {
-  //   console.log(msg);
-  //   bot.sendAnimation(chatId, msg.animation.file_id);
-  // }
 });

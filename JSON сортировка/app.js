@@ -50,22 +50,28 @@ async function processLineByLine() {
 }
 
 async function getEndpointData(endpoint) {
-  await axios
-    .get(endpoint)
-    .then(function (response) {
-      const foundValue = findVal(response.data);
-      console.log(`${endpoint} value is ${foundValue}`);
-      if (foundValue) {
-        values.true += 1;
-      } else if (foundValue === false) {
-        values.false += 1;
-      } else {
-        console.log(`Cannot find property on ${endpoint}`);
-      }
-    })
-    .catch(function (error) {
-      console.log(error.message);
-    });
+  for (let attempt = 0; attempt != 3; attempt++) {
+    let isSuccessful = await axios
+      .get(endpoint)
+      .then(function (response) {
+        const foundValue = findVal(response.data);
+        console.log(`${endpoint} value is ${foundValue}`);
+        if (foundValue) {
+          values.true += 1;
+          return true;
+        } else if (foundValue === false) {
+          values.false += 1;
+          return true;
+        } else {
+          console.log(`Cannot find property on ${endpoint}`);
+          return false;
+        }
+      })
+      .catch(function (error) {
+        console.log(error.message);
+      });
+    if (isSuccessful) break;
+  }
 }
 
 function findVal(data) {
@@ -88,6 +94,7 @@ function findVal(data) {
   //   console.log(endpoints);
   for (let endpoint of endpoints) {
     // console.log(endpoint);
+
     await getEndpointData(endpoint);
   }
   console.log(values);
