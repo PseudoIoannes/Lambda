@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_telegram_bot_api_1 = __importDefault(require("node-telegram-bot-api"));
+require("dotenv").config();
 const axios_1 = __importDefault(require("axios"));
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const db = new sqlite3_1.default.Database(":memory:");
@@ -70,7 +71,7 @@ const hype = [
     "RPL",
 ];
 // replace the value below with the Telegram token you receive from @BotFather
-const token = "5873363295:AAH8IWtOXvvOTEVVGFc75FbaPnxHfVQvkv4";
+const token = process.env.token;
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new node_telegram_bot_api_1.default(token, { polling: true });
 bot.onText(/^\/start$/, (msg) => __awaiter(void 0, void 0, void 0, function* () {
