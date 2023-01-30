@@ -52,7 +52,6 @@ app.post("/", URLValidator, async (req, res) => {
       .updateOne({}, { $set: { number: COUNTER.number + 1 } });
     await db.collection("urls").insertOne({ shortUrl, originalUrl: url });
 
-    // let fullUrl = req.protocol + "://" + req.get("host") + "/" + shortUrl;
     res.json(
       urlformat.format({
         protocol: req.protocol,

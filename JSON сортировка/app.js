@@ -5,29 +5,6 @@ const readline = require("readline");
 const events = require("events");
 const path = require("path");
 
-// test = {
-//   firstName: "Max",
-//   lastName: "Remus",
-//   hobbies: ["singing", "swimming"],
-//   work: "MediaDime",
-//   weight: "60 kg",
-//   location: {
-//     country: "Lithuania",
-//     zipCode: "38390",
-//     city: "Lewisburg",
-//     countryCode: "LT",
-//     ipAddress: "219.59.74.191",
-//     coordinates: {
-//       x: -39.84,
-//       y: 19.96,
-//       isDone: false,
-//     },
-//   },
-//   id: "id#8cf04c1b-7181-4488-b106-3436fd6a2bda",
-//   age: "49",
-//   email: "max.remus@opticast.com",
-//   height: "166",
-// };
 let values = { true: 0, false: 0 };
 let endpoints = [];
 
