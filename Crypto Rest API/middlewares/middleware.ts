@@ -1,14 +1,14 @@
-const fs = require("fs").promises;
+import fs from "fs";
 import {Request, Response } from 'express';
 
 
+const onAllAPIEndpointsStr = fs.readFileSync(
+    "onAllAPIEndpoints.txt",
+    "utf-8"
+  );
 
 
 export const validateSymbol = async (req:Request,res:Response, next:Function)=>{
-  const onAllAPIEndpointsStr = await fs.readFile(
-      "onAllAPIEndpoints.txt",
-      "utf-8"
-    );
     const symbols = await JSON.parse(onAllAPIEndpointsStr);
   console.log(symbols)
   const {symbol} = req.query

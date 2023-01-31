@@ -1,9 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateTime = exports.validateMarket = exports.validateSymbol = void 0;
-const fs = require("fs").promises;
+const fs_1 = __importDefault(require("fs"));
+const onAllAPIEndpointsStr = fs_1.default.readFileSync("onAllAPIEndpoints.txt", "utf-8");
 const validateSymbol = async (req, res, next) => {
-    const onAllAPIEndpointsStr = await fs.readFile("onAllAPIEndpoints.txt", "utf-8");
     const symbols = await JSON.parse(onAllAPIEndpointsStr);
     console.log(symbols);
     const { symbol } = req.query;
@@ -45,8 +48,8 @@ exports.validateMarket = validateMarket;
 const validateTime = async (req, res, next) => {
     const { time } = req.query;
     if (typeof time === "string") {
-        let extension = time.slice(-1);
-        let timeAmmount = Number(time.slice(0, -1));
+        const extension = time.slice(-1);
+        const timeAmmount = Number(time.slice(0, -1));
         if ((extension !== "m" && extension !== "h") || isNaN(timeAmmount) || timeAmmount === 0) {
             res.json({ "error": "Cant parse time" });
         }
