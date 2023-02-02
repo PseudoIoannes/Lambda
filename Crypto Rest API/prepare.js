@@ -1,115 +1,93 @@
-let { connectToDb } = require("./db");
-
-let connection;
-connectToDb((e) => {
-  connection = e;
-});
-
-console.log(connection);
-
-const fs = require("fs").promises;
-
-const axios = require("axios");
-let key = "be6b91ee-5fed-4f91-adb8-43075d231f74";
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.onAllApiEndpoints = exports.main = void 0;
+const db_1 = require("./db");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const fs_1 = __importDefault(require("fs"));
+const axios_1 = __importDefault(require("axios"));
+const key = process.env.key;
+const onAllApiEndpoints = [];
+exports.onAllApiEndpoints = onAllApiEndpoints;
 async function main() {
-  let onAllApiEndpoints = [];
-
-  const [coinmarketcap, coinbase, kucoin, coinpaprika, coinstats] =
-    await Promise.all([
-      axios.get(
-        " https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=200", //?limit=5000", // 5000 25 credits
+    console.log("connection in prepare.js", Boolean(db_1.connection));
+    const [coinmarketcap, coinbase, kucoin, coinpaprika, coinstats] = await Promise.all([
+        axios_1.default.get(" https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=200", //?limit=5000", // 5000 25 credits
         {
-          headers: {
-            "X-CMC_PRO_API_KEY": key,
-          },
-        }
-      ),
-      axios.get(` https://api.coinbase.com/v2/exchange-rates?currency=USD`),
-      axios.get(`https://api.kucoin.com/api/v1/market/allTickers`),
-      axios.get("https://api.coinpaprika.com/v1/tickers"),
-      axios.get(
-        ` https://api.coinstats.app/public/v1/coins?skip=0&limit=200&currency=USD`
-      ),
+            headers: {
+                "X-CMC_PRO_API_KEY": key,
+            },
+        }),
+        axios_1.default.get(` https://api.coinbase.com/v2/exchange-rates?currency=USD`),
+        axios_1.default.get(`https://api.kucoin.com/api/v1/market/allTickers`),
+        axios_1.default.get("https://api.coinpaprika.com/v1/tickers"),
+        axios_1.default.get(` https://api.coinstats.app/public/v1/coins?skip=0&limit=200&currency=USD`),
     ]);
-
-  let coinmarketcapSymbols = [];
-  for (let e of coinmarketcap.data.data) {
-    coinmarketcapSymbols.push(e.symbol);
-  }
-  console.log(coinmarketcapSymbols);
-
-  let coinbaseSymbols = [];
-  console.log(coinbase.data.data.rates);
-  for (let e in coinbase.data.data.rates) {
-    console.log(e);
-    coinbaseSymbols.push(e);
-  }
-  console.log(coinbaseSymbols);
-
-  let kucoinSymbols = [];
-  for (let e of kucoin.data.data.ticker) {
-    if (e.symbol.split("-")[1] === "USDT") {
-      kucoinSymbols.push(e.symbol.split("-")[0]);
+    const coinmarketcapSymbols = [];
+    for (const e of coinmarketcap.data.data) {
+        coinmarketcapSymbols.push(e.symbol);
     }
-  }
-  console.log(kucoinSymbols);
-
-  let coinstatsSymbols = [];
-  for (let e of coinstats.data.coins) {
-    coinstatsSymbols.push(e.symbol);
-  }
-  console.log(coinstatsSymbols);
-
-  let coinpaprikaSymbols = [];
-  for (let e of coinpaprika.data) {
-    coinpaprikaSymbols.push(e.symbol);
-  }
-  console.log(coinpaprikaSymbols);
-
-  let counter = 0;
-  for (let e of coinmarketcapSymbols) {
-    // console.log(e)
-
-    if (
-      coinbaseSymbols.includes(e) &&
-      kucoinSymbols.includes(e) &&
-      coinstatsSymbols.includes(e) &&
-      coinpaprikaSymbols.includes(e)
-    ) {
-      counter += 1;
-      console.log(counter);
-      onAllApiEndpoints.push(e);
-      if (counter === 50) {
-        await fs.writeFile(
-          "onAllAPIEndpoints.txt",
-          JSON.stringify(onAllApiEndpoints)
-        );
-        break;
-      }
+    const coinbaseSymbols = [];
+    for (const e in coinbase.data.data.rates) {
+        coinbaseSymbols.push(e);
     }
-  }
-
-  let markets = [
-    "coinmarketcap",
-    "coinbase",
-    "kucoin",
-    "coinstats",
-    "coinpaprika",
-  ];
-  for (let symbol of onAllApiEndpoints) {
-    for (let market of markets) {
-      await connection.execute(
-        `CREATE TABLE IF NOT EXISTS ${market}_${symbol} (
-                id int AUTO_INCREMENT,
-                price Decimal(40,20),
-                added TIMESTAMP,
-                PRIMARY KEY(id)
-                ); `
-      );
+    const kucoinSymbols = [];
+    for (const e of kucoin.data.data.ticker) {
+        if (e.symbol.split("-")[1] === "USDT") {
+            kucoinSymbols.push(e.symbol.split("-")[0]);
+        }
     }
-  }
-  console.log("Done");
+    const coinstatsSymbols = [];
+    for (const e of coinstats.data.coins) {
+        coinstatsSymbols.push(e.symbol);
+    }
+    const coinpaprikaSymbols = [];
+    for (const e of coinpaprika.data) {
+        coinpaprikaSymbols.push(e.symbol);
+    }
+    let counter = 0;
+    for (const e of coinmarketcapSymbols) {
+        // console.log(e)
+        if (coinbaseSymbols.includes(e) &&
+            kucoinSymbols.includes(e) &&
+            coinstatsSymbols.includes(e) &&
+            coinpaprikaSymbols.includes(e)) {
+            counter += 1;
+            console.log(counter);
+            onAllApiEndpoints.push(e);
+            if (counter === 50) {
+                await fs_1.default.promises.writeFile("onAllAPIEndpoints.txt", JSON.stringify(onAllApiEndpoints));
+                console.log(onAllApiEndpoints);
+                break;
+            }
+        }
+    }
+    const markets = [
+        "coinmarketcap",
+        "coinbase",
+        "kucoin",
+        "coinstats",
+        "coinpaprika",
+    ];
+    console.log(onAllApiEndpoints.length);
+    for (const symbol of onAllApiEndpoints) {
+        for (const market of markets) {
+            try {
+                await db_1.connection.execute(`CREATE TABLE IF NOT EXISTS ${market}_${symbol} (
+            id int AUTO_INCREMENT,
+            price Decimal(40,20),
+            added TIMESTAMP,
+            PRIMARY KEY(id)
+            ); `);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    }
+    console.log("Done");
 }
-
-main();
+exports.main = main;

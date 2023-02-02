@@ -1,22 +1,31 @@
 import express, { Express, Request, Response } from 'express';
-import {controller} from "./controllers/controller"
 const app: Express = express();
-import  { connectToDb } from "./db";
-import { Connection } from "mysql2";
+import { main } from "./prepare";
 
 import {validateSymbol, validateMarket, validateTime} from "./middlewares/middleware"
+import {controller} from "./controllers/controller"
+import  { connectToDb, connection } from "./db";
+import { schedule } from "./cron";
+
+const port = process.env.PORT || 3000
 
 
-let connection:Connection ;
-connectToDb((e: Connection) => {
-  connection = e;
-  app.listen(3000,()=> console.log("listening"))
-});
+async function initialization(){
+  await connectToDb();
+  console.log("server level connection", Boolean(connection))
+  await main()
+  schedule()
+  app.listen(port,()=> console.log("listening"))
+  
+}
+initialization()
+
+
+
 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 app.get("/", validateSymbol, validateMarket, validateTime, controller)
 

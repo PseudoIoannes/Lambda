@@ -19,12 +19,12 @@ const axios_1 = __importDefault(require("axios"));
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const db = new sqlite3_1.default.Database("favlist");
 db.run("CREATE TABLE if not exists list (id INTEGER PRIMARY KEY, favourites TEXT)");
+const link = "http://cryptorestapi.fly.dev";
+// const link = "http://127.0.0.1:3000"
 const hype = [
     "BTC",
     "ETH",
-    "USDC",
     "XRP",
-    "BUSD",
     "ADA",
     "DOGE",
     "SOL",
@@ -43,33 +43,11 @@ const hype = [
     "LDO",
     "APE",
     "APT",
-    "CRO",
-    "FIL",
     "QNT",
     "ALGO",
     "HBAR",
-    "ICP",
-    "MANA",
-    "FLOW",
-    "AAVE",
-    "AXS",
     "SAND",
-    "EOS",
-    "EGLD",
-    "XTZ",
-    "CHZ",
-    "GRT",
-    "ZEC",
-    "CRV",
-    "MKR",
-    "SNX",
-    "DASH",
-    "IMX",
-    "OP",
-    "ENJ",
-    "1INCH",
-    "LRC",
-    "RPL",
+    "MANA",
 ];
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.token;
@@ -78,10 +56,16 @@ const bot = new node_telegram_bot_api_1.default(token, { polling: true });
 function getListData(list) {
     return __awaiter(this, void 0, void 0, function* () {
         let answer = [];
+        let promarray = [];
         for (let symbol of list) {
-            const res = yield axios_1.default.get(`http://127.0.0.1:3000/?symbol=${symbol}&time=5m`);
-            answer.push(`/${symbol} $${res.data.data}`);
+            const prom = axios_1.default.get(`${link}/?symbol=${symbol}&time=5m`);
+            promarray.push(prom);
         }
+        const responses = yield Promise.all(promarray);
+        responses.map(res => {
+            let symbol = list[responses.indexOf(res)];
+            answer.push(`/${symbol} $${res.data.data}`);
+        });
         return answer;
     });
 }
@@ -115,10 +99,15 @@ bot.onText(/^\/listFavourites$/, (msg) => __awaiter(void 0, void 0, void 0, func
     const chatId = msg.chat.id;
     db.get(`SELECT * FROM list WHERE id=${chatId}`, function (err, row) {
         return __awaiter(this, void 0, void 0, function* () {
-            let favs = row.favourites.split(" ");
-            favs.splice(0, 1);
-            let answer = yield getListData(favs);
-            bot.sendMessage(chatId, answer.join("\n") || "Your list is empty");
+            if (row) {
+                let favs = row.favourites.split(" ");
+                favs.splice(0, 1);
+                let answer = yield getListData(favs);
+                bot.sendMessage(chatId, answer.join("\n") || "Your list is empty");
+            }
+            else {
+                console.log("row", row);
+            }
         });
     });
 }));
@@ -175,10 +164,16 @@ bot.onText(/^\/((?!listRecent|start|help|listFavourites|addToFavourite|deleteFav
     else {
         const times = ["30m", "1h", "3h", "6h", "12h", "24h"];
         let answer = [`Price history for ${symbol}:`];
+        let promarray = [];
         for (let time of times) {
-            const res = yield axios_1.default.get(`http://127.0.0.1:3000/?symbol=${symbol}&time=${time}`);
-            answer.push(`${time}: ${res.data.data}`);
+            const prom = axios_1.default.get(`${link}/?symbol=${symbol}&time=${time}`);
+            promarray.push(prom);
         }
+        const responses = yield Promise.all(promarray);
+        responses.map(res => {
+            let time = times[responses.indexOf(res)];
+            answer.push(`${time}: ${res.data.data}`);
+        });
         const opts = {
             reply_markup: {
                 inline_keyboard: [
@@ -215,4 +210,4 @@ bot.on("callback_query", function onCallbackQuery(callbackQuery) {
     });
     console.log(data, chatId);
 });
-bot.on("polling_error", console.log); //catch syntax errors
+// bot.on("polling_error", console.log); //catch syntax errors

@@ -1,14 +1,15 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateTime = exports.validateMarket = exports.validateSymbol = void 0;
-const fs_1 = __importDefault(require("fs"));
-const onAllAPIEndpointsStr = fs_1.default.readFileSync("onAllAPIEndpoints.txt", "utf-8");
+const prepare_1 = require("../prepare");
 const validateSymbol = async (req, res, next) => {
-    const symbols = await JSON.parse(onAllAPIEndpointsStr);
-    console.log(symbols);
+    // const onAllAPIEndpointsStr = await fs.promises.readFile(
+    //   "onAllAPIEndpoints.txt",
+    //   "utf-8"
+    // );
+    // const symbols = await JSON.parse(onAllAPIEndpointsStr);
+    const symbols = prepare_1.onAllApiEndpoints;
+    // console.log(symbols)
     const { symbol } = req.query;
     if (typeof symbol === "string") {
         if (!symbols.includes(symbol.toUpperCase())) {

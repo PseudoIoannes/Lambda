@@ -1,16 +1,12 @@
 import fs from "fs";
 import {Request, Response } from 'express';
+import { onAllApiEndpoints } from "../prepare";
 
-
-const onAllAPIEndpointsStr = fs.readFileSync(
-    "onAllAPIEndpoints.txt",
-    "utf-8"
-  );
 
 
 export const validateSymbol = async (req:Request,res:Response, next:Function)=>{
-    const symbols = await JSON.parse(onAllAPIEndpointsStr);
-  console.log(symbols)
+
+  const symbols = onAllApiEndpoints
   const {symbol} = req.query
   
 if (typeof symbol === "string"){

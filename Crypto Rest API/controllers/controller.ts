@@ -1,15 +1,10 @@
 import { Request, Response} from 'express';
 
-import  { connectToDb } from "../db";
-import { Connection } from "mysql2";
-
-let connection:Connection ;
-connectToDb((e: Connection) => {
-  connection = e;
-});
+import  { connectToDb, connection } from "../db";
 
 
 export const controller = async (req:Request,res:Response)=>{
+  console.log("controller", Boolean(connection))
   const {symbol, market, time } = req.query
   let timeForSQL:string
   
@@ -43,20 +38,29 @@ export const controller = async (req:Request,res:Response)=>{
       "coinpaprika",
     ];
   }else{
-    markets = [market as string]
+    if (typeof market === "string") markets = [market]
   }
+
+
     const prices: number[] = []
     for (const market of markets){
-      const [rows] = await connection.execute(`SELECT    *
-     FROM      ${market}_${symbol}
-     WHERE added >= DATE_SUB(now(),INTERVAL ${timeForSQL!})
-     ORDER BY  id DESC
-     ;`);
-    
-     for (const e of rows){
-      prices.push(Number(e.price))
-     
-     }
+      try{
+        const symbolupper = typeof symbol === "string"? symbol.toUpperCase():symbol
+        const [rows] = await connection.execute(`SELECT    *
+        FROM      ${market}_${symbolupper }
+        WHERE added >= DATE_SUB(now(),INTERVAL ${timeForSQL!})
+        ORDER BY  id DESC
+        ;`);
+        
+        
+        for (const e of rows as any){//
+          prices.push(Number(e.price))
+          
+        }
+      }catch(err){
+        console.log(err)
+      }
+
   
     }
   

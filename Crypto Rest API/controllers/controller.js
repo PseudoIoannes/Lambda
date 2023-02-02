@@ -2,11 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.controller = void 0;
 const db_1 = require("../db");
-let connection;
-(0, db_1.connectToDb)((e) => {
-    connection = e;
-});
 const controller = async (req, res) => {
+    console.log("controller", Boolean(db_1.connection));
     const { symbol, market, time } = req.query;
     let timeForSQL;
     if (typeof time === "string") {
@@ -40,13 +37,19 @@ const controller = async (req, res) => {
     }
     const prices = [];
     for (const market of markets) {
-        const [rows] = await connection.execute(`SELECT    *
-     FROM      ${market}_${symbol}
-     WHERE added >= DATE_SUB(now(),INTERVAL ${timeForSQL})
-     ORDER BY  id DESC
-     ;`);
-        for (const e of rows) {
-            prices.push(Number(e.price));
+        try {
+            const symbolupper = typeof symbol === "string" ? symbol.toUpperCase() : symbol;
+            const [rows] = await db_1.connection.execute(`SELECT    *
+        FROM      ${market}_${symbolupper}
+        WHERE added >= DATE_SUB(now(),INTERVAL ${timeForSQL})
+        ORDER BY  id DESC
+        ;`);
+            for (const e of rows) {
+                prices.push(Number(e.price));
+            }
+        }
+        catch (err) {
+            console.log(err);
         }
     }
     const init = 0;

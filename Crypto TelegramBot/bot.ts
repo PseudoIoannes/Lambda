@@ -7,12 +7,13 @@ import  sqlite3  from "sqlite3"
 const db = new sqlite3.Database("favlist");
 db.run("CREATE TABLE if not exists list (id INTEGER PRIMARY KEY, favourites TEXT)")
 
+const link = "http://cryptorestapi.fly.dev"
+// const link = "http://127.0.0.1:3000"
+
 const hype = [
   "BTC",
   "ETH",
-  "USDC",
   "XRP",
-  "BUSD",
   "ADA",
   "DOGE",
   "SOL",
@@ -31,33 +32,11 @@ const hype = [
   "LDO",
   "APE",
   "APT",
-  "CRO",
-  "FIL",
   "QNT",
   "ALGO",
   "HBAR",
-  "ICP",
-  "MANA",
-  "FLOW",
-  "AAVE",
-  "AXS",
   "SAND",
-  "EOS",
-  "EGLD",
-  "XTZ",
-  "CHZ",
-  "GRT",
-  "ZEC",
-  "CRV",
-  "MKR",
-  "SNX",
-  "DASH",
-  "IMX",
-  "OP",
-  "ENJ",
-  "1INCH",
-  "LRC",
-  "RPL",
+  "MANA",
 ];
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.token!;
@@ -69,12 +48,19 @@ const bot = new TelegramBot(token, { polling: true });
 async function getListData(list: string[]){
 
   let answer: string[] = [];
+  let promarray = []
   for (let symbol of list) {
-    const res = await axios.get(
-      `http://127.0.0.1:3000/?symbol=${symbol}&time=5m`
+    const prom =  
+    axios.get(
+      `${link}/?symbol=${symbol}&time=5m`
     );
-    answer.push(`/${symbol} $${res.data.data}`);
+    promarray.push(prom)
   }
+  const responses = await Promise.all(promarray)
+  responses.map(res => {
+    let symbol = list[responses.indexOf(res)]
+    answer.push(`/${symbol} $${res.data.data}`);
+  })
   return answer
 }
 
@@ -116,11 +102,16 @@ bot.onText(/^\/listFavourites$/, async (msg) => {
   const chatId = msg.chat.id;
 
    db.get(`SELECT * FROM list WHERE id=${chatId}`,async function(err, row) {
-    let favs: string[] = row.favourites.split(" ")
-    favs.splice(0,1)
+    if (row){
 
+      let favs: string[] = row.favourites.split(" ")
+      favs.splice(0,1)
+      
       let answer = await getListData(favs)
       bot.sendMessage(chatId, answer.join("\n") || "Your list is empty");
+    } else{
+      console.log("row", row)
+    }
     })
 
 });
@@ -176,16 +167,24 @@ bot.onText(/^\/((?!listRecent|start|help|listFavourites|addToFavourite|deleteFav
   if (!isValidSymbol(symbol)) {
     bot.sendMessage(chatId, "This symbol is not supported");
   } else {
+
+
     const times = ["30m", "1h", "3h", "6h", "12h", "24h"];
     let answer = [`Price history for ${symbol}:`];
 
+    let promarray = []
     for (let time of times) {
-      const res = await axios.get(
-        `http://127.0.0.1:3000/?symbol=${symbol}&time=${time}`
+      const prom = axios.get(
+        `${link}/?symbol=${symbol}&time=${time}`
       );
-      answer.push(`${time}: ${res.data.data}`);
+      promarray.push(prom)
     }
+    const responses = await Promise.all(promarray)
 
+    responses.map(res => {
+        let time = times[responses.indexOf(res)]
+        answer.push(`${time}: ${res.data.data}`);
+      })
     
     const opts = {
       reply_markup: {
@@ -231,4 +230,4 @@ bot.on("callback_query", function onCallbackQuery(callbackQuery) {
  
 });
 
-bot.on("polling_error", console.log); //catch syntax errors
+// bot.on("polling_error", console.log); //catch syntax errors

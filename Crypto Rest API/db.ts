@@ -1,23 +1,25 @@
-// import mysql2, { Connection } from "mysql2/promise";
 import env from "dotenv";
 env.config()
-// get the client
-import mysql from "mysql2/promise";
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function connectToDb(cb:Function) {
-  mysql
-    .createConnection({
-      host: "localhost",
-      user: "root",
-      database: "crypto",
+import mysql, {Connection, Pool} from 'mysql2/promise';
+
+let connection:Pool
+export async function connectToDb() {
+ connection = mysql
+    .createPool({
+      host: process.env.host,
+       user: process.env.user,
+      database: process.env.database,
       password: [process.env.password].toString(),
+      waitForConnections: true,
+      connectionLimit: 20,
+      queueLimit: 0
     })
-    .then((connection) => {
-      cb(connection);
-      console.log("OK");
-    })
-    .catch((e) => console.log(e));
+      await connection.execute(
+        `CREATE DATABASE IF NOT EXISTS crypto; `
+      );
+  
+      console.log("from db", Boolean(connection));
+    
 }
-
-// module.exports = { connectToDb };
+export {connection}
